@@ -7,6 +7,7 @@ QQ邮箱免密登录 | AI岗位匹配 | STAR法则简历优化 | 云端历史回
 
 import streamlit as st
 import json
+import os
 import random
 import time
 import re
@@ -55,11 +56,18 @@ JOBS_DB_PATH = Path(__file__).parent / "jobs_db.json"
 # HELPER: Load secrets safely
 # ======================================================================
 def get_secret(section: str, key: str) -> Optional[str]:
-    """Safely read a nested secret from st.secrets with graceful fallback."""
+    """Safely read a nested secret from st.secrets, with env var fallback.
+    HF Spaces Docker injects secrets as env vars like QQ_MAIL__SENDER,
+    which maps to st.secrets["qq_mail"]["sender"].
+    """
+    # Try st.secrets first (local .streamlit/secrets.toml or Streamlit Cloud)
     try:
         return st.secrets[section][key]
     except (KeyError, TypeError):
-        return None
+        pass
+    # Fallback: env var (HF Spaces Docker, Docker, etc.)
+    env_var = f"{section.upper()}__{key.upper()}"
+    return os.environ.get(env_var)
 
 
 # ======================================================================
