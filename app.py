@@ -14,6 +14,8 @@ import smtplib
 import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.header import Header
+from email.utils import formataddr
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, List, Dict, Any
@@ -167,7 +169,7 @@ def send_verification_email(to_email: str, code: str) -> tuple[bool, str]:
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = "🎯 AI求职智能体 - 登录验证码"
-    msg["From"] = f"AI求职智能体 <{sender}>"
+    msg["From"] = formataddr((str(Header("AI求职智能体", "utf-8")), sender))
     msg["To"] = to_email
     msg.attach(MIMEText(html_content, "html", "utf-8"))
 
