@@ -1,0 +1,23 @@
+# Render Blueprint — one-click deploy to render.com
+# China-accessible: *.onrender.com domain
+services:
+  - type: web
+    name: ai-job-match-agent
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: QQ_MAIL__SENDER
+        sync: false
+      - key: QQ_MAIL__AUTH_CODE
+        sync: false
+      - key: SUPABASE__URL
+        sync: false
+      - key: SUPABASE__ANON_KEY
+        sync: false
+      - key: LLM__API_KEY
+        sync: false
+      - key: LLM__BASE_URL
+        sync: false
+      - key: LLM__MODEL_NAME
+        sync: false
