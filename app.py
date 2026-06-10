@@ -181,13 +181,25 @@ def send_verification_email(to_email: str, code: str) -> tuple[bool, str]:
     msg["To"] = to_email
     msg.attach(MIMEText(html_content, "html", "utf-8"))
 
-    # ── Connect & Send via SSL ────────────────────────────────────────
+    # ── Connect & Send (try 587 STARTTLS first, fallback to 465 SSL) ──
+    last_error = None
+    # Strategy 1: Port 587 with STARTTLS (HF Spaces compatible)
     try:
-        context = ssl.create_default_context()
-        with smtplib.SMTP_SSL("smtp.qq.com", 465, context=context, timeout=15) as server:
+        with smtplib.SMTP("smtp.qq.com", 587, timeout=15) as server:
+            server.starttls(context=ssl.create_default_context())
             server.login(sender, auth_code)
             server.sendmail(sender, to_email, msg.as_string())
         return True, "验证码已发送，请查收QQ邮箱"
+    except Exception as e:
+        last_error = e
+    # Strategy 2: Port 465 with SSL (local/dev compatible)
+    try:
+        with smtplib.SMTP_SSL("smtp.qq.com", 465, context=ssl.create_default_context(), timeout=15) as server:
+            server.login(sender, auth_code)
+            server.sendmail(sender, to_email, msg.as_string())
+        return True, "验证码已发送，请查收QQ邮箱"
+    except Exception as e:
+        last_error = e
     except smtplib.SMTPAuthenticationError:
         return False, "QQ邮箱SMTP认证失败，请检查授权码是否正确"
     except smtplib.SMTPConnectError:
